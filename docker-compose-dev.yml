@@ -2,7 +2,7 @@ version: '2'
 
 services:
   emscripten:
-    image: ystenzel/bos-emscripten-compiler:0.3
+    image: ystenzel/bos-emscripten-compiler:0.4
     links:
       - rethinkdb
     env_file:
@@ -35,7 +35,7 @@ services:
     stdin_open: true
     tty: true
   bos-web-app:
-    image: ystenzel/bos-web-app:0.3
+    image: ystenzel/bos-web-app:0.4
     links:
       - rethinkdb
     ports:
