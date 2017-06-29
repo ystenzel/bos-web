@@ -1,0 +1,281 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Collaborative Editor</title>
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+		<style>
+			html, body {
+				height: 100%;
+				width: 100%;
+				background-color:#333;
+				font-family: arial;
+			}
+/*			#editor-wrapper {
+				display: inline-block;
+				width: 50%;
+				margin-left: auto;
+				margin-right:1em;
+				margin-top:2em;
+			}
+			#board-wrapper {
+				display: inline-block;
+				width: 40%;
+				margin-right: auto;
+				margin-left:1em;
+				margin-top:2em;
+			}*/
+			.cuser {
+				color: #999;
+			}
+			
+
+			.caret {
+				position: relative;
+				width: 2px;
+				height: 1.2em;
+				background-color: blueviolet;
+				display: inline;
+				margin-right: -.6em;
+			}
+			div.caret#lappen {
+				background-color: aqua;
+			}
+			div.caret#username {
+				background-color: blueviolet;
+			}
+
+			@keyframes pulse_animation {
+				0% { opacity: 1; }
+				50% {opacity: 0; }
+				100% { opacity: 1; }
+			}
+			.pulse {
+				animation-name: pulse_animation;
+				animation-duration: 2000ms;
+				animation-iteration-count: infinite;
+				animation-timing-function: ease-in-out;
+			}
+
+			.CodeMirror,
+			canvas#board{
+				border-radius: .25rem;
+				border-top-left-radius: 0.25rem;
+				border-top-right-radius: 0.25rem;
+				border-bottom-right-radius: 0.25rem;
+				border-bottom-left-radius: 0.25rem;
+			}
+
+			#overlay {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				background-color: slategrey;
+				z-index: 20;
+			}
+
+				
+		</style>
+	</head>
+	<body>
+		<div id="overlay"></div>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-12">
+					<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+							<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+								<span class="navbar-toggler-icon"></span>
+							</button>
+							<a class="navbar-brand" href="#">Board of Symbols Web</a>
+							<div class="collapse navbar-collapse" id="navbarNavDropdown">
+							<ul class="navbar-nav mr-auto">
+											<li class="nav-item active">
+													<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+											</li>
+											<!-- <li class="nav-item">
+													<a class="nav-link" href="#">Features</a>
+											</li>
+											<li class="nav-item">
+													<a class="nav-link" href="#">Pricing</a>
+											</li> -->
+
+									</ul>
+									<ul class="navbar-nav">
+											<li class="nav-item dropdown">
+											<a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+										<span id="user-name"></span>
+											</a>
+											<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+												<a class="dropdown-item" href="#">Action</a>
+												<a class="dropdown-item" href="#">Another action</a>
+												<a class="dropdown-item" href="#">Something else here</a>
+											</div>
+										</li>
+									</ul>
+							</div>
+						</nav>
+				</div>
+			</div>
+						
+			<div class="row">
+				<div class="col-sm-12 col-md-6" id="board-wrapper">
+					<div class="form-check">
+						<label for="statusText" class="sr-only">status text</label>
+						<input type="text" id="statusText" class="form-control" placeholder="status text" readonly>
+					</div>
+
+					<canvas id="board">
+						Leider kann das Canvas in diesem Browser nicht dargestellt werden.
+					</canvas>
+					<!-- <p id="statusText"></p> -->
+					<div class="form-inline">
+						<label class="sr-only" for="inlineFormInput">BoSL Command</label>
+						<input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="boslCommand" placeholder="BoSL Command">
+						<button onclick="btn_boslCommand()" class="btn btn-primary">Submit</button>
+					</div>
+				</div>
+				<div class="col-sm-12 col-md-6" id="editor-wrapper">
+					<div class="form-inline" style="display: -webkit-inline-box;">
+						<div class="form-check">
+							<label class="mr-sm-2 sr-only" for="projectSelect">Select Project</label>
+							<select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="projectSelect">
+							</select>
+						</div>
+
+						<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#projectManageModal">New Snippet</button>
+						<button type="button" class="btn btn-danger" onclick="btn_projectDelete()">Delete Snippet</button>
+
+						<div class="form-check">
+							<label class="mr-sm-2 sr-only" for="compilerSelect">Compiler</label>
+							<select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="compilerSelect">
+								<option value="js">JavaScript</option>
+								<option value="py">Python</option>
+								<option value="c">C</option>
+								<option value="cpp">C++</option>
+								<option value="java">Java</option>
+								<option value="bosl" disabled>BoSL</option>
+							</select>
+						</div>
+					</div>
+
+					<span class="cuser">Current User: </span>
+					
+					<span id="user-id"></span>
+
+					<textarea id="editor"></textarea>
+					<p id="pos"></p>
+					<div class="progress">
+						<div id="compileProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+					</div>
+
+					<!-- <div class="btn-group">
+						<button type="button" class="btn btn-secondary">Compile</button>
+						<button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span class="sr-only">Toggle Dropdown</span>
+						</button>
+						<div class="dropdown-menu">
+							<a class="dropdown-item" id="btn_sel_compile" href="#">Compile</a>
+							<a class="dropdown-item" id="btn_sel_compile_run" href="#">Compile and Run</a>
+						</div>
+					</div> -->
+
+					<button id="btn_compile" onclick="btn_compile()" class="btn btn-primary" disabled>Compile</button>
+					<button id="btn_run" onclick="btn_run()" class="btn btn-primary" disabled>Run Code</button>
+
+					<textarea id="compile-msg"></textarea>
+				</div>
+			</div>
+		</div>
+				
+<!-- 		<div class="caret pulse" id="lappen"></div>
+		<div class="caret pulse" id="username"></div> -->
+
+		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginModal">Login</button>
+
+		<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="loginModalLabel">Login</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form>
+							<div class="form-group">
+								<label for="loginUsername" class="form-control-label">username</label>
+								<input type="text" class="form-control" id="loginUsername" value="johndoe">
+							</div>
+							<div class="form-group">
+								<label for="loginPassword" class="form-control-label">password</label>
+								<input type="text" class="form-control" id="loginPassword" value="password">
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" onclick="createTestdata()" class="btn btn-primary">Create testuser</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" onclick="btn_login()" class="btn btn-primary">Login</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+
+		<div class="modal fade" id="projectManageModal" tabindex="-1" role="dialog" aria-labelledby="projectManageModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="projectManageModalLabel">New Snippet</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form>
+							<div class="form-group">
+								<label for="projectManageFilename" class="form-control-label">Snippet name</label>
+								<input type="text" class="form-control" id="projectManageFilename" placeholder="your snippet">
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" onclick="btn_projectCreate()" class="btn btn-primary">Create</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
+		<script src="bower_components/codemirror/lib/codemirror.js"></script>
+		<link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css">
+		<link rel="stylesheet" href="bower_components/codemirror/theme/xq-dark.css">
+		<script src="bower_components/codemirror/mode/javascript/javascript.js"></script>
+		<script src="bower_components/codemirror/mode/clike/clike.js"></script>
+		<script src="bower_components/codemirror/mode/python/python.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+		<script src="bower_components/jquery/dist/jquery.min.js"></script>
+
+		<!-- Bootstrap JS -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+		<script src="js/editor.js"></script>
+
+		<!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/ocanvas/2.8.7/ocanvas.min.js"></script> -->
+		<script src="bower_components/fabric.js/dist/fabric.min.js"></script>
+		<script src="js/board.js"></script>
+		<script src="js/test-db.js"></script>
+
+		<script type="text/javascript">
+			$('#loginModal').modal('toggle');
+		</script>
+	</body>
+</html>

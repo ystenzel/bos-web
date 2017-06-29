@@ -1,0 +1,22 @@
+{
+  "name": "rethink_web",
+  "description": "first test",
+  "main": "index.js",
+  "authors": [
+    "Yannik Stenzel"
+  ],
+  "license": "ISC",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.2.1",
+    "codemirror": "^5.25.0",
+    "fabric.js": "fabric#^1.7.13"
+  }
+}

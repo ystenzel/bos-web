@@ -1,0 +1,17 @@
+{
+  "name": "api-transcrypt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "transcrypt-compiler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yannik Stenzel",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.1",
+    "child_process": "^1.0.2",
+    "fs": "0.0.1-security",
+    "rethinkdb": "^2.3.3"
+  }
+}

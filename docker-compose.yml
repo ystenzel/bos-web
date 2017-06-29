@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+  emscripten:
+    image: ystenzel/bos-emscripten-compiler:0.2
+    links:
+      - rethinkdb
+    env_file:
+    - bos-web.env
+    tty: true
+    stdin_open: true
+  python:
+    image: ystenzel/bos-transcrypt-compiler:0.2
+    links:
+      - rethinkdb
+    env_file:
+    - bos-web.env
+    stdin_open: true
+    tty: true
+  jsweet:
+    image: ystenzel/bos-jsweet-compiler:0.2
+    links:
+      - rethinkdb
+    env_file:
+    - bos-web.env
+    stdin_open: true
+    tty: true
+  bos-web-app:
+    image: ystenzel/bos-web-app:0.2
+    links:
+      - rethinkdb
+    ports:
+      - "3000:3000"
+    env_file:
+    - bos-web.env
+    environment:
+      - PORT=3000
+      - IP=0.0.0.0
+  rethinkdb:
+    image: rethinkdb
+    ports:
+      - "8080:8080"
+      - "28015:28015"
+      - "29015:29015"
+    volumes:
+      - .:/data
