@@ -1,21 +1,4 @@
-# docker build -t ystenzel/bos-web-app .
 FROM node:8.1-alpine
-
-# RUN mkdir -p /usr/local/app
-# WORKDIR /usr/local/app
-
-# Install app dependencies
-# COPY package.json /usr/src/app/
-# RUN npm install
-
-# Bundle app source
-# COPY . /usr/src/app
-
-
-# RUN yum update -y && \
-# 	yum install -y npm && \
-# 	yum clean all && \
-# 	npm install -g pm2
 
 ADD app/package.json /tmp/package.json
 RUN cd /tmp && npm install

@@ -1,6 +1,4 @@
-# docker build -t ystenzel/emscripten-compiler .
 FROM rsippl/emscripten:latest
-# FROM ystenzel/bos-transcrypt-compiler:latest
 
 RUN yum update -y && \
 	yum install -y npm && \

@@ -42,30 +42,11 @@ c.width = boardProps.pixel.width;
 
 var canvas = new fabric.Canvas('board');
 fabric.Object.prototype.selectable = false;
+canvas.selection = false;
+canvas.hoverCursor = 'default'
 
 var board = [];
 var boardBorder;
-
-// // create a rectangle object
-// var rect = new fabric.Rect({
-// 	left: 100,
-// 	top: 100,
-// 	fill: 'red',
-// 	width: 20,
-// 	height: 20
-// });
-
-// // "add" rectangle onto canvas
-// canvas.add(rect);
-
-
-// var ctx=c.getContext("2d");
-
-
-// var canvas = oCanvas.create({
-// 	canvas: "#board",
-// 	background: "#eee",
-// });
 
 // http://stackoverflow.com/questions/25837158/how-to-draw-a-star-by-using-canvas-html5
 function drawStar(cx,cy,spikes,outerRadius,innerRadius){
@@ -90,28 +71,12 @@ function drawStar(cx,cy,spikes,outerRadius,innerRadius){
 	return p;
 }
 
-// var pathR = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
-// pathR.set({ left: 20, top: 20});
-// canvas.add(pathR);
 
-// var pathS = [['m',0,25],['a',25,25,0,1,0,50,0],['a',25,25,0,1,0,-50,0]];
-// var path2 = new fabric.Path(pathS);
-// path2.set({ left: 20, top: 20});
-// canvas.add(path2);
-
-// var newPath = [['M',0,0],['m',0,0],['L',50,0],['L',50,50],['L',0,50],['z']];
-// var path3 = new fabric.Path(newPath);
-// path3.set({ left: 80, top: 20});
-// canvas.add(path3);
-
-// var starPath = drawStar(25,25,8,25,10);
-// var star = new fabric.Path(starPath);
-// star.set({left:20,top:70});
-// canvas.add(star);
-var plusDepth = boardProps.field.width*.1;
 var path;
 
+// paths for fieldObjects written as SVG
 function initPaths() {
+	var plusDepth = boardProps.field.width*.1;
 	path = {
 		rect: [['M',0,0],['L',boardProps.field.width,0],['L',boardProps.field.width,boardProps.field.height],['L',0,boardProps.field.height],['z']],
 		circ: [['m',0,boardProps.field.height/2],['a',(boardProps.field.width/2),(boardProps.field.height/2),0,1,0,boardProps.field.width,0],['a',(boardProps.field.width/2),(boardProps.field.height/2),0,1,0,-boardProps.field.width,0]],
@@ -137,7 +102,9 @@ initPaths();
 	
 
 function fieldObject(shape, fill, top, x, y) {
+	// each object in the array fieldObj is a single layer of the fabric.Group
 	var fieldObj = []
+	// layer: background
 	fieldObj.push(new fabric.Rect({
 		'top': top-boardProps.field.height/2,
 		'fill': 'rgba(0,0,0,0)',
@@ -147,6 +114,7 @@ function fieldObject(shape, fill, top, x, y) {
 		originX: 'center'
 	}));
 	
+	// layer: shape
 	var fieldShape;
 	fieldShape = new fabric.Path(path[shape]);
 	fieldShape.set('top', top);
@@ -154,6 +122,7 @@ function fieldObject(shape, fill, top, x, y) {
 	fieldShape.set({'originX':'center','originY':'center'});
 	fieldObj.push(fieldShape);
 	
+	// layer: number
 	if (boardProps.showNum) var col='#2e6bfd'
 		else var col='rgba(0,0,0,0)'
 	fieldObj.push(new fabric.Text(getNumString({x:x,y:y}),{
@@ -164,6 +133,7 @@ function fieldObject(shape, fill, top, x, y) {
 		fill: col
 	}));
 
+	// layer: text
 	fieldObj.push(new fabric.Text('',{
 		top: top-5,
 		fontSize:10,
@@ -177,6 +147,7 @@ function fieldObject(shape, fill, top, x, y) {
 	});
 }
 
+// border of board
 function drawBorder() {
 	boardBorder = new fabric.Rect({
 		left: paddingPercent.h*boardProps.field.width,
@@ -197,19 +168,8 @@ function drawFields() {
 		board[x] = [];
 		var line = [];
 		for (var y = 0; y < boardProps.noOfFields.y; y++) {
-			// board[x][y] = new fabric.Rect({
-			// 	left: (x+boardProps.marginPercent.h+boardProps.paddingPercent.h)*boardProps.field.width,
-			// 	top: (y+boardProps.marginPercent.v+boardProps.paddingPercent.v)*boardProps.field.height,
-			// 	fill: 'red',
-			// 	width: boardProps.field.width,
-			// 	height: boardProps.field.height
-			// });
-			// canvas.add(board[x][y]);
 			line[y] = fieldObject('circ', '#eee', ((boardProps.noOfFields.y-y)-1)*boardProps.field.height,x,y);
 			line[y].on('mousedown', function(e) {
-				// farbe2(e.subTargets[0].boardX,e.subTargets[0].boardY,'#d07373');
-				// form2(e.subTargets[0].boardX,e.subTargets[0].boardY,'circ');
-				// boardO[e.subTargets[0].boardX].remove(boardO[e.subTargets[0].boardX].getObjects()[e.subTargets[0].boardY]);
 				console.log('Field x:'+e.subTargets[0].boardX+' y:'+e.subTargets[0].boardY+' was clicked');
 				canvas.renderAll();
 			});
@@ -230,53 +190,6 @@ function drawFields() {
 
 drawBorder();
 drawFields();
-			
-
-function getCorrectColor(color) {
-	if (color === parseInt(color, 10)) {
-		var initial = '#000000';
-		color = color.toString (16);
-		color = initial.substring(0, initial.length - color.length) + color;
-		return color;
-	}
-	if (color.length == 7 || color.length == 4) return color;		
-}
-
-function getCoordReverse(pos){
-	return {x: pos.x, y: (boardProps.noOfFields.y-pos.y)-1};
-}
-
-function getCoordForInt(i) {
-	var x = i % boardProps.noOfFields.x;
-	var y = (i - x) / boardProps.noOfFields.y;
-	return {x: x, y: y};
-}
-
-			function getField(pos) {
-				if (reverseY) pos = getCoordReverse(pos);
-				return board[pos.x][pos.y];
-			}
-
-			function getFieldLayer(pos,layer) {
-				return getField(pos).getObjects()[layer];
-			}
-
-function eachField(layer,setParam) {
-	for (var x = 0; x < board.length; x++) {
-		for (var y = 0; y < board[x].length; y++) {
-			board[x][y].getObjects()[layer].set(setParam);
-		}
-	}
-}
-
-function modifyField(pos,layer,setParam) {
-	if (reverseY) pos = getCoordReverse(pos);
-	if (pos.x < board.length && pos.y < board[0].length) {
-		board[pos.x][pos.y].getObjects()[layer].set(setParam);
-	} else {
-		statusText('board index out of range');
-	}
-}
 
 function getNumString(pos) {
 	if (boardProps.numMode == 'coord') return pos.x+','+pos.y
@@ -306,7 +219,46 @@ function changeNumMode(){
 	canvas.renderAll();
 }
 
+// Helper functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// hex-colors need to be transformed from 0x000000/0x0000/0x00 to #000000
+function getCorrectColor(color) {
+	if (color === parseInt(color, 10)) {
+		var initial = '#000000';
+		color = color.toString (16);
+		color = initial.substring(0, initial.length - color.length) + color;
+		return color;
+	}
+	if (color.length == 7 || color.length == 4) return color;		
+}
 
+function getCoordReverse(pos){
+	return {x: pos.x, y: (boardProps.noOfFields.y-pos.y)-1};
+}
+
+function getCoordForInt(i) {
+	var x = i % boardProps.noOfFields.x;
+	var y = (i - x) / boardProps.noOfFields.y;
+	return {x: x, y: y};
+}
+
+function eachField(layer,setParam) {
+	for (var x = 0; x < board.length; x++) {
+		for (var y = 0; y < board[x].length; y++) {
+			board[x][y].getObjects()[layer].set(setParam);
+		}
+	}
+}
+
+function modifyField(pos,layer,setParam) {
+	if (reverseY) pos = getCoordReverse(pos);
+	if (pos.x < board.length && pos.y < board[0].length) {
+		board[pos.x][pos.y].getObjects()[layer].set(setParam);
+	} else {
+		statusText('board index out of range');
+	}
+}
+
+// BoSL functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function loeschen() {
 	canvas.clear();
 	board = [];
@@ -314,13 +266,11 @@ function loeschen() {
 }
 
 function farbe(i,color) {
-	// getFieldLayer(getCoordForInt(i),1).set('fill', getCorrectColor(color));
 	modifyField(getCoordForInt(i),1,{'fill': getCorrectColor(color)});
 	canvas.renderAll();
 }
 
 function farbe2(x,y,color) {
-	// getFieldLayer({x: x, y: y},1).set('fill', getCorrectColor(color));
 	modifyField({x: x, y: y},1,{'fill': getCorrectColor(color)});
 	canvas.renderAll();
 }
@@ -336,13 +286,11 @@ function flaeche(color){
 }
 
 function form(i,shape) {
-	// getFieldLayer(getCoordForInt(i),1).set('path',path[shape]);
 	modifyField(getCoordForInt(i),1,{'path': path[shape]});
 	canvas.renderAll();
 }
 
 function form2(x,y,shape) {
-	// getFieldLayer({x: x, y: y},1).set('path',path[shape]);
 	modifyField({x: x, y: y},1,{'path': path[shape]});
 	canvas.renderAll();
 }
@@ -354,15 +302,10 @@ function formen(shape) {
 
 function rahmen(color) {
 	boardBorder.set('stroke',color);
-	// console.log('rahmen');
 	canvas.renderAll();
 }
 
 function symbolGroesse(i,percent) {
-	// getFieldLayer(getCoordForInt(i),1).set({
-	// 	'scaleX':percent,
-	// 	'scaleY':percent
-	// });
 	modifyField(getCoordForInt(i),1,{
 		'scaleX':percent,
 		'scaleY':percent
@@ -371,10 +314,6 @@ function symbolGroesse(i,percent) {
 }
 
 function symbolGroesse2(x,y,percent) {
-	// getFieldLayer({x: x, y: y},1).set({
-	// 	'scaleX':percent,
-	// 	'scaleY':percent
-	// });
 	modifyField({x: x, y: y},1,{
 		'scaleX':percent,
 		'scaleY':percent
@@ -383,13 +322,11 @@ function symbolGroesse2(x,y,percent) {
 }
 
 function hintergrund(i,color) {
-	// getFieldLayer(getCoordForInt(i),0).set('fill',getCorrectColor(color));
 	modifyField(getCoordForInt(i),0,{'fill': getCorrectColor(color)});
 	canvas.renderAll();
 }
 
 function hintergrund2(x,y,color) {
-	// getFieldLayer({x: x, y: y},0).set('fill',getCorrectColor(color));
 	modifyField({x: x, y: y},0,{'fill': getCorrectColor(color)});
 	canvas.renderAll();
 }
@@ -416,25 +353,21 @@ function groesse(x,y) {
 
 
 function text(i,text) {
-	// getFieldLayer(getCoordForInt(i),3).set('text',text);
 	modifyField(getCoordForInt(i),3,{'text': text});
 	canvas.renderAll();
 }
 
 function text2(x,y,text) {
-	// getFieldLayer({x: x, y: y},3).set('text',text);
 	modifyField({x: x, y: y},3,{'text': text});
 	canvas.renderAll();
 }
 
 function textFarbe(i,color) {
-	// getFieldLayer(getCoordForInt(i),3).set('fill',getCorrectColor(color));
 	modifyField(getCoordForInt(i),3,{'fill': getCorrectColor(color)});
 	canvas.renderAll();
 }
 
 function textFarbe2(x,y,color) {
-	// getFieldLayer({x: x, y: y},3).set('fill',getCorrectColor(color));
 	modifyField({x: x, y: y},3,{'fill': getCorrectColor(color)});
 	canvas.renderAll();
 }
@@ -609,6 +542,8 @@ function getShape(s) {
 	};
 }
 
+// if a color-variable is used, need to check if its valid 
+// given string must be transformed to function
 function checkColorVar(color) {
 	try {
 		eval(color);
@@ -695,73 +630,4 @@ function boslToJs(boslString) {
 	}
 }
 
-
-// // func color is missing!!
-// function boslToJs(boslString) {
-// 	cmd = boslString.split(" ");
-// 	// need to regex these commands
-// 	switch (cmd[0]) {
-// 		case "c":
-// 			loeschen();
-// 			break;
-// 		case "r":
-// 			groesse(parseInt(cmd[1]),parseInt(cmd[2]));
-// 			break;
-// 		case "f":
-// 			formen(getShape(cmd[1]));
-// 			break;
-// 		case "fi":
-// 			form(parseInt(cmd[1]),getShape(cmd[2]));
-// 			break;
-// 		case "#fi":
-// 			form2(parseInt(cmd[1]),parseInt(cmd[2]),getShape(cmd[3]));
-// 			break;
-// 		case "s":
-// 			symbolGroesse(parseInt(cmd[1]),cmd[2]);
-// 			break;
-// 		case "#s":
-// 			symbolGroesse2(parseInt(cmd[1]),parseInt(cmd[2]),cmd[3]);
-// 			break;
-// 		case "ba":
-// 			flaeche(cmd[1]);
-// 			break;
-// 		case "bo":
-// 			rahmen(cmd[1]);
-// 			break;
-// 		case "b":
-// 			hintergrund(parseInt(cmd[1]),cmd[2]);
-// 			break;
-// 		case "#b":
-// 			hintergrund2(parseInt(cmd[1]),parseInt(cmd[2]),cmd[3]);
-// 			break;
-// 		case "T":
-// 			// to get the whole text, splice "T" "n" and join the array
-// 			text(parseInt(cmd[1]),(cmd.splice(2)).join(" "));
-// 			break;
-// 		case "#T":
-// 			// to get the whole text, splice "T" "x" "y" and join the array
-// 			text2(parseInt(cmd[1]),parseInt(cmd[2]),(cmd.splice(3)).join(" "));
-// 			break;
-// 		case "TC":
-// 			textFarbe(parseInt(cmd[1]),cmd[2]);
-// 			break;
-// 		case "#TC":
-// 			textFarbe2(parseInt(cmd[1]),parseInt(cmd[2]),cmd[3]);
-// 			break;
-// 		case "t":
-// 			statusText((cmd.splice(1)).join(" "));
-// 			break;
-// 		case "p":
-// 			// get last command
-// 			break;
-
-// 		case "n":
-// 			changeNumVisible();
-// 			break;
-// 		default:
-// 			console.log('Err: cannot find BoSL-Command "'+boslString+'"');
-// 			statusText('Err: cannot find BoSL-Command "'+boslString+'"');
-// 			break;
-// 	}
-// }
 

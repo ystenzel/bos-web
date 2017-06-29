@@ -13,13 +13,12 @@ var user = getParameterByName('user');
 var userObj;
 var caret;
 var projects = [];
-// var project = {id: "b2512256-b734-49bb-ae6c-e11f2e728864"};
-// var project = {id: "c32a7ba7-da56-468d-a15b-43ed4aed8d0d"};
 var project = {id: ""};
 var compiledCode = '';
 
 document.getElementById("user-name").innerHTML = user;
 
+// CodeMirror Editor
 var cmEditor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 	lineNumbers: true,
 	indentUnit: 4,
@@ -27,6 +26,7 @@ var cmEditor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 	theme: 'xq-dark'
 });
 
+// CodeMirror Log-Data
 var cmCompileMsg = CodeMirror.fromTextArea(document.getElementById("compile-msg"), {
 	lineNumbers: false,
 	indentUnit: 4,
@@ -45,17 +45,9 @@ var availableCodeMirrorModes = {
 	java: 'text/x-java'
 }
 
-// $.ajax({
-// 	url: '/getData2/' + project.id,
-// 	success: function(result, status, xhr) {
-// 		cmEditor.setValue(result.code);
-// 		projectChanges(result);
-// 	}
-// });
-
 function projectChanges(newProject = project) {
 	project = newProject;
-	// console.log(project.compiler);
+	// set button config depending on compiler
 	if (project.compiler == 'js') {
 		btn_run_enable(true);
 		btn_compile_enable(false);
@@ -65,48 +57,14 @@ function projectChanges(newProject = project) {
 		if (compiledCode == undefined || compiledCode == '') btn_run_enable(false);
 		else btn_run_enable(true);
 	}
-
+	// set compiler in option-select and set CodeMirror mode
 	$('#compilerSelect').val(project.compiler);
 	cmEditor.setOption('mode',availableCodeMirrorModes[project.compiler]);
 }
 
-function btn_compile_enable(bool) {
-	if (bool) $('#btn_compile').prop('disabled','');
-	else $('#btn_compile').prop('disabled','disabled');
-}
 
-function btn_run_enable(bool) {
-	if (bool) $('#btn_run').prop('disabled','');
-	else $('#btn_run').prop('disabled','disabled');
-}
-
-
-cmEditor.on('keyup', function () {
-	// console.log('keyup');
-	// changeByUser();
-	changeCaret();
-});
-// cmEditor.on('cut', function () {
-// 	// console.log('cut');
-// 	changeByUser();
-// 	changeCaret();
-// });
-// cmEditor.on('copy', function () {
-// 	// console.log('copy');
-// 	changeByUser();
-// 	changeCaret();
-// });
-// cmEditor.on('paste', function () {
-// 	// console.log('paste');
-// 	changeByUser();
-// 	changeCaret();
-// });
-cmEditor.on('mousedown', function () {
-	// console.log('mousedown');
-	changeCaret();
-	// changeByUser();
-});
-
+// update database functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// push caret position to DB - important for collaborative implementation
 function changeCaret(){
 	var newCaret = {
 		caretPos: {
@@ -122,12 +80,50 @@ function changeCaret(){
 			coworker: caret,
 			projId: project.id
 		};
-			
-		socket.emit('caret-update',msg);
+		socket.emit('caretUpdate',msg);
 	}
 }
 
+// copy important project-data -> emit compile
+function compile() {
+	var msg = {
+		userid: userObj.id,
+		project: {
+			id: project.id,
+			version: project.version,
+			compiler: project.compiler,
+			code: cmEditor.getValue()
+		}
+	}
+	socket.emit('compile',msg);
+	compiledCode = '';
+	compileProgressBar(35,'copile was sent');
+}
 
+// CodeMirror functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// different CodeMirror events may be interesting for collaborative implementation
+cmEditor.on('keyup', function () {
+	// console.log('keyup');
+	changeCaret();
+});
+// cmEditor.on('cut', function () {
+// 	// console.log('cut');
+// 	changeCaret();
+// });
+// cmEditor.on('copy', function () {
+// 	// console.log('copy');
+// 	changeCaret();
+// });
+// cmEditor.on('paste', function () {
+// 	// console.log('paste');
+// 	changeCaret();
+// });
+cmEditor.on('mousedown', function () {
+	// console.log('mousedown');
+	changeCaret();
+});
+
+// action on CodeMirror Editor change -> emit documentUpdate
 cmEditor.on('change', function (cm,changeObj) {
 	// console.log(changeObj);
 	if (changeObj.origin == "setValue") return;
@@ -152,30 +148,16 @@ cmEditor.on('change', function (cm,changeObj) {
 	if ((changeObj.text[0]+""+changeObj.removed[0]) == "") {
 		msg.change.lines = changeObj.text.length+changeObj.removed.length-2;
 	} else msg.change.char = changeObj.text[0]+""+changeObj.removed[0];
-	// console.log("emit: update");
-	socket.emit('document-update',msg);
+	socket.emit('documentUpdate',msg);
 });
 
+// // code may be usefull for collaborative implementation
+// var msg_old;
 
-function compile() {
-	var msg = {
-		userid: userObj.id,
-		project: {
-			id: project.id,
-			version: project.version,
-			compiler: project.compiler,
-			code: cmEditor.getValue()
-		}
-	}
-	socket.emit('compile',msg);
-	compiledCode = '';
-	compileProgressBar(35,'copile was sent');
-}
-
-var msg_old;
-
-socket.on('docnew', function(msg){
+// socket.on functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+socket.on('projectChange', function(msg){
 	if (msg.new_val != null) {
+		// code may be usefull for collaborative implementation
 		// var l = msg.new_val.changes.length -1;
 		// if(msg.new_val.id === project.id && msg.new_val.changes[l].uid != userObj.id) {
 		// 	var current_pos = cmEditor.getCursor();
@@ -204,7 +186,7 @@ socket.on('docnew', function(msg){
 		// 		}
 		// 	}
 		// }
-	
+
 		if(msg.new_val.id === project.id && msg.new_val.uid != userObj.id) {
 			var current_pos = cmEditor.getCursor();
 			cmEditor.getDoc().setValue(msg.new_val.code);
@@ -230,94 +212,67 @@ socket.on('compileFinish', function (msg) {
 			if (msg.new_val.compileMsg !== '') cmCompileMsg.getDoc().setValue(msg.new_val.compileMsg);
 			else cmCompileMsg.getDoc().setValue("compile successfully ...");
 			btn_run_enable(true);
+			// autorun after compile
 			btn_run();
-			socket.emit('deleteCompiled',msg.new_val.id);
+			socket.emit('compiledDelete',msg.new_val.id);
 			compileProgressBar(100,'compile finished','bg-success');
 		} else if (msg.new_val.status === "compile error") {
 			// console.log('compile error');
 			cmCompileMsg.getDoc().setValue(msg.new_val.compileMsg);
 			btn_run_enable(false);
-			socket.emit('deleteCompiled',msg.new_val.id);
+			socket.emit('compiledDelete',msg.new_val.id);
 			compileProgressBar(100,'compile error','bg-danger');
 		}
 		
 	}
 })
 
-function getChangeChars(change){
-	text = change.text;
-	switch(change.type) {
-		case '+input':
-			return {ch: (change.char === undefined) ? 0 : change.char.length, line: (change.lines === undefined) ? 0 : change.lines};
-			break;
-		case '+delete':
-			return {ch: (change.char === undefined) ? 0 : change.char.length*-1, line: (change.lines === undefined) ? 0 : change.lines*-1};
-			break;
-		default:
-			return {ch: 0,line: 0};
+socket.on('loginResponse', function(msg){
+	console.log('Login response: '+msg.success);
+	if (msg.success == 'success') {
+		$('#user-name').html(msg.user.name);
+		$('#user-id').html("("+msg.user.id+")");
+		userObj = msg.user;
+		$('#overlay').remove();
+		$('#loginModal').modal('hide');
+		socket.emit('getProjectsOfUser',userObj.id);
 	}
-}
-
-function getChangeLines(length){
-	if (length == 0) return 1;
-	return 0;
-}
-
-function btn_run() {
-	switch(project.compiler){
-		case 'js':
-			millis = new Date().getTime();
-			eval(cmEditor.getValue());
-			break;
-		case 'cpp':
-			eval(compiledCode);
-			break;
-		case 'c':
-			eval(compiledCode);
-			break;
-		case 'py':
-			eval(compiledCode);
-			break;
-		case 'java':
-			eval(compiledCode);
-			break;
-		default:
-			break;
-	} 
-}
-
-function btn_compile() {
-	// console.log('compile');
-	compile();
-}
-
-function btn_boslCommand() {
-	var cmd = document.getElementById('boslCommand').value;
-	eval(boslToJs(cmd));
-}
-
-function btn_login() {
-	if ($('#loginUsername').val() !== "" && $('#loginPassword').val() !== "") {
-		var msg = {
-			username: $('#loginUsername').val(),
-			secret: $('#loginPassword').val()
-		}
-		socket.emit('loginRequest',msg);
-	}
-}
-
-
-$("#compilerSelect").change(function() {
-	var compiler = "";
-	$( "#compilerSelect option:selected" ).each(function() {
-		compiler = $(this).val();
-	});
-	project.compiler = compiler
-	projectChanges();
-	socket.emit('compiler-update',{projId: project.id, update: {compiler: project.compiler}});
 });
 
-function compileProgressBar(percent,msg="YOLO",style="bg-info") {
+socket.on('projectResponse', function(msg) {
+	// console.log(msg);
+	cmEditor.setValue(msg.code);
+	projectChanges(msg);
+	updateProjectList();
+	$( "#projectSelect" ).val(msg.id);
+});
+
+socket.on('returnProjectsOfUser', function(msg) {
+	var exists = false;
+	projects.forEach(function(val,key){
+		if (val.id == msg.id) exists = true;
+	});
+	if (!exists) projects.push(msg);	
+	updateProjectList();
+});
+
+// // code may be usefull for collaborative implementation
+// function getChangeChars(change){
+// 	text = change.text;
+// 	switch(change.type) {
+// 		case '+input':
+// 			return {ch: (change.char === undefined) ? 0 : change.char.length, line: (change.lines === undefined) ? 0 : change.lines};
+// 			break;
+// 		case '+delete':
+// 			return {ch: (change.char === undefined) ? 0 : change.char.length*-1, line: (change.lines === undefined) ? 0 : change.lines*-1};
+// 			break;
+// 		default:
+// 			return {ch: 0,line: 0};
+// 	}
+// }
+
+// update UI functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function compileProgressBar(percent,msg="",style="bg-info") {
 	var display = $("#compileProgress"),
 		currentValue = parseInt(display.attr('aria-valuenow')),
 		nextValue = percent,
@@ -346,20 +301,6 @@ function compileProgressBar(percent,msg="YOLO",style="bg-info") {
 	$(display).addClass(style);
 }
 	
-
-socket.on('loginResponse', function(msg){
-	console.log('Login response: '+msg.success);
-	if (msg.success == 'success') {
-		$('#user-name').html(msg.user.name);
-		$('#user-id').html("("+msg.user.id+")");
-		userObj = msg.user;
-		$('#overlay').remove();
-		$('#loginModal').modal('hide');
-		socket.emit('getProjectsOfUser',userObj.id);
-	}
-});
-
-
 function updateProjectList() {
 	var values = $("#projectSelect>option").map(function() { return {id: $(this).val(), name: $(this).text()}; });
 
@@ -382,30 +323,47 @@ function updateProjectList() {
 	});
 }
 
-$("#projectSelect").change(function() {
-	var projId = "";
-	$( "#projectSelect option:selected" ).each(function() {
-		projId = $(this).val();
-	});
-	socket.emit('projectRequest',projId);
-});
+// btn_functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function btn_run() {
+	switch(project.compiler){
+		case 'js':
+			eval(cmEditor.getValue());
+			break;
+		case 'cpp':
+			eval(compiledCode);
+			break;
+		case 'c':
+			eval(compiledCode);
+			break;
+		case 'py':
+			eval(compiledCode);
+			break;
+		case 'java':
+			eval(compiledCode);
+			break;
+		default:
+			break;
+	} 
+}
 
-socket.on('projectResponse', function(msg) {
-	// console.log(msg);
-	cmEditor.setValue(msg.code);
-	projectChanges(msg);
-	updateProjectList();
-	$( "#projectSelect" ).val(msg.id);
-});
+function btn_compile() {
+	compile();
+}
 
-socket.on('returnProjectsOfUser', function(msg) {
-	var exists = false;
-	projects.forEach(function(val,key){
-		if (val.id == msg.id) exists = true;
-	});
-	if (!exists) projects.push(msg);	
-	updateProjectList();
-});
+function btn_boslCommand() {
+	var cmd = document.getElementById('boslCommand').value;
+	eval(boslToJs(cmd));
+}
+
+function btn_login() {
+	if ($('#loginUsername').val() !== "" && $('#loginPassword').val() !== "") {
+		var msg = {
+			username: $('#loginUsername').val(),
+			secret: $('#loginPassword').val()
+		}
+		socket.emit('loginRequest',msg);
+	}
+}
 
 function btn_projectCreate(){
 	if ($('#projectManageFilename').val() !== "") {
@@ -433,8 +391,38 @@ function btn_projectDelete() {
 	socket.emit('getProjectsOfUser',userObj.id);
 }
 
+// btn_functions change mode
+function btn_compile_enable(bool) {
+	if (bool) $('#btn_compile').prop('disabled','');
+	else $('#btn_compile').prop('disabled','disabled');
+}
+
+function btn_run_enable(bool) {
+	if (bool) $('#btn_run').prop('disabled','');
+	else $('#btn_run').prop('disabled','disabled');
+}
+
+// select.change functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+$("#compilerSelect").change(function() {
+	var compiler = "";
+	$( "#compilerSelect option:selected" ).each(function() {
+		compiler = $(this).val();
+	});
+	project.compiler = compiler
+	projectChanges();
+	socket.emit('compilerUpdate',{projId: project.id, update: {compiler: project.compiler}});
+});
+
+$("#projectSelect").change(function() {
+	var projId = "";
+	$( "#projectSelect option:selected" ).each(function() {
+		projId = $(this).val();
+	});
+	socket.emit('projectRequest',projId);
+});
 
 
+// caret-test data - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var caret_test = document.createElement('div');
 $(caret_test).addClass('caret pulse');
 $(caret_test).prop('id','lappen');

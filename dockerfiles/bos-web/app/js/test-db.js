@@ -17,8 +17,8 @@ function createTestdata() {
 			compiler: "c", 
 			name: "C test"}]
 	};
-	console.log("emit: create-testdata");
-	socketInit.emit('create-testdata',testdata);
+	console.log("emit: createTestdata");
+	socketInit.emit('createTestdata',testdata);
 
 	var testdata = {
 		testuser: {email: "john@doe.com", firstname: "John", lastname : "Doe", secret: "password", username: "johndoe"},
@@ -36,10 +36,10 @@ function createTestdata() {
 			compiler: "c", 
 			name: "C test"}]
 	};
-	socketInit.emit('create-testdata',testdata);
+	socketInit.emit('createTestdata',testdata);
 	
 }
 
-socketInit.on('create-testdata-response', function(msg){
+socketInit.on('createTestdataResponse', function(msg){
 	console.log(msg);
 });

@@ -4,6 +4,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+// get environment-vars and set default if not set
 var dbHost = process.env.hasOwnProperty('DBHOST') ? process.env.DBHOST : 'rethinkdb';
 var dbName = process.env.hasOwnProperty('DBNAME') ? process.env.DBNAME : 'development';
 var port = process.env.hasOwnProperty('PORT') ? process.env.PORT : '4000';
@@ -49,9 +50,9 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 			console.log('user disconnected');
 			console.log(io.engine.clientsCount);
 		});
-		socket.on('document-update', function(msg){
+		socket.on('documentUpdate', function(msg){
 			// console.log(msg);
-			console.log('document-updated');
+			console.log('documentUpdate');
 
 			var update = {
 				code: msg.code,
@@ -67,7 +68,7 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 				});
 		});
 
-		socket.on('compiler-update', function(msg){
+		socket.on('compilerUpdate', function(msg){
 			r.db(dbName).table('projects').get(msg.projId)
 				.update(msg.update)
 				.run(conn, function(err, res) {
@@ -75,8 +76,8 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 				});
 		});
 
-		socket.on('caret-update', function(msg){
-			console.log('caret-update');
+		socket.on('caretUpdate', function(msg){
+			console.log('caretUpdate');
 
 			r.db(dbName).table('projects').get(msg.projId)
 				.update(function(row){
@@ -181,7 +182,7 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 			});
 		});
 
-		socket.on('deleteCompiled', function (id) {
+		socket.on('compiledDelete', function (id) {
 			r.db(dbName).table('compile').get(id).delete().run(conn, function(err, res){
 				if (err) throw err;
 				console.log('compile deleted: '+id);
@@ -198,8 +199,8 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 			console.log('user disconnected');
 			console.log(io.engine.clientsCount);
 		});
-		socket.on('create-testdata', function(msg){
-			console.log('create-testdata');
+		socket.on('createTestdata', function(msg){
+			console.log('createTestdata');
 
 			r.db(dbName).table('users')
 				.insert(msg.testuser)
@@ -222,7 +223,7 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 								var id = res.generated_keys[0];
 								r.db(dbName).table('projects').get(id).run(conn, function(err, res) {
 									if (err) throw err;
-									socket.emit('create-testdata-response',res);
+									socket.emit('createTestdataResponse',res);
 								});
 							});
 					}
@@ -238,7 +239,7 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 			console.log('cursor');
 			cursor.each(function(err, row) {
 				if (err) throw err;
-				ioBoS.emit('docnew', row);
+				ioBoS.emit('projectChange', row);
 			});
 		});
 
@@ -263,6 +264,7 @@ r.connect({ host: dbHost, port: 28015 }, function(err, conn) {
 		// for (var i = 0; i < dbo.length; i++) {
 		// 	dbo[i]
 		// }
+		// quick and dirty: number of tables and indexes created
 		if (dbo.length > 4) listenDB();
 		return false;
 	}
@@ -299,29 +301,6 @@ app.get('/', function(req, res) {
 
 app.use('/bower_components', express.static('bower_components'));
 app.use('/js', express.static('js'));
-
-
-
-function createTableFuck(conn,dbName,tableName,secondIndex='') {
-	console.log(tableName);
-	r.db(dbName).tableList().run(conn, function(err, response){
-		if(response.indexOf(tableName) < 0){
-			// if table does not exist, create it...
-			r.db(dbName).tableCreate(tableName).run(conn, function(err, res){
-				if(err) throw err;
-				console.log('create table '+tableName);
-				console.log('index name '+secondIndex);
-				if (secondIndex != '') {
-					console.log('create index '+secondIndex);
-					r.db(dbName).table(tableName).indexCreate(secondIndex).run(conn, function(err,res){
-						if(err) throw err;
-						console.log(res);
-					})
-				};
-			});
-		}
-	});
-}
 
 // Setup Express Listener
 http.listen(port, ip, function(){
