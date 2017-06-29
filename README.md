@@ -35,7 +35,7 @@ To create the first test data with two users and four projects each simply click
 
 Each project is a code-snippet, so if you choose C as compiler, all functions to modify the Board are already implemented in the header. The code written by the user is filled in the main-function once it gets compiled.
 
-All available functions to modify the board can be found here: List of available functions
+All available functions to modify the board can be found here: [List of available functions](https://github.com/ystenzel/bos-web/blob/master/List-of-available-functions.md)
 
 Please notice, that the actual JSweet compiler for Java takes a bit of time. *(Starting with 5sec to compile the code)*
 
@@ -78,4 +78,4 @@ To connect to a container run:
 docker name-of-container attach
 ```
 
-Scripts can be started, restarted and stopped with node or pm2.
+Scripts inside the containers can be started, restarted and stopped with node or pm2.

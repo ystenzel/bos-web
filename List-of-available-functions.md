@@ -6,54 +6,65 @@ The Board uses two different types of addressing the fields. A linear- and a x-/
 
 Erase the whole board:
 ```javascript
-function loeschen(){}```
+function loeschen(){}
+```
 
 And create a new one:
 ```javascript
-function groesse(x,y){}```
+function groesse(int x, int y){}
+```
 
 Color the background:
 ```javascript
-function flaeche(color){}```
+function flaeche(hex/string color){}
+```
 
 Color the frame of the board:
 ```javascript
-function rahmen(color){}```
+function rahmen(hex/sting color){}
+```
 
 Give the fields different colors:
 ```javascript
-function farbe(i,color){}
-function farbe2(x,y,color){}
+function farbe(int i, hex/string color){}
+function farbe2(int x, int y, hex/string color){}
 // or even all fields at once
-function farben(color){}```
+function farben(hex/string color){}
+```
 
-Or a new shape (actually you can use s,c,*,rect,circ,star,plus):
+Or a new shape (actually you can use s,c,\*,rect,circ,star,plus):
 ```javascript
-function form(i,shape){}
-function form2(x,y,shape){}
+function form(int i, string shape){}
+function form2(int x, int y, string shape){}
 // all fields at once
-function formen(shape){}```
+function formen(string shape){}
+```
 
 Change the size (0.5 is normal; 1 doubles the size):
 ```javascript
-function symbolGroesse(i,percent){}
-function symbolGroesse2(x,y,percent){}```
+function symbolGroesse(int i, double/int percent){}
+function symbolGroesse2(int x, int y, double/int percent){}
+```
 
 Set a background color for each field:
 ```javascript
-function hintergrund(i,color){}
-function hintergrund2(x,y,color){}```
+function hintergrund(int i, hex/string color){}
+function hintergrund2(int x, int y, hex/string color){}
+```
 
 Show a text inside the fields:
 ```javascript
-function text(i,text){}
-function text2(x,y,text){}```
+function text(int i, string text){}
+function text2(int x, int y, string text){}
+```
 
 And color the text:
 ```javascript
-function textFarbe(i,color){}
-function textFarbe2(x,y,color){}```
+function textFarbe(int i, hex/string color){}
+function textFarbe2(int x, int y, hex/string color){}
+```
 
 Simply output a string above the Board:
 ```javascript
-function statusText(string){}```
+function statusText(string text){}
+```
