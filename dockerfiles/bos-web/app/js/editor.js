@@ -234,8 +234,8 @@ socket.on('loginResponse', function(msg){
 		$('#user-id').html("("+msg.user.id+")");
 		userObj = msg.user;
 		$('#overlay').remove();
-		$('#loginModal').modal('hide');
 		socket.emit('getProjectsOfUser',userObj.id);
+		$('#loginModal').modal('hide');
 	}
 });
 
@@ -248,6 +248,7 @@ socket.on('projectResponse', function(msg) {
 });
 
 socket.on('returnProjectsOfUser', function(msg) {
+	console.log(msg);
 	var exists = false;
 	projects.forEach(function(val,key){
 		if (val.id == msg.id) exists = true;

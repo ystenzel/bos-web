@@ -99,35 +99,35 @@ void farben(int f) {
 void formen(char* f) {
   // printf(">>f %s\n", f);
   EM_ASM_({
-    formen($0);
+    formen(Pointer_stringify($0));
   }, f);
   pruefeZeilen();
 }
 void form(int i, char* f) {
   // printf(">>fi %d %s\n", i, f);
   EM_ASM_({
-    form(parseInt($0),$1);
+    form(parseInt($0),Pointer_stringify($1));
   }, i,f);
   pruefeZeilen();
 }
 void form2(int i, int j, char* f) {
   // printf(">>#fi %d %d %s\n", i, j, f);
   EM_ASM_({
-    form2(parseInt($0),parseInt($1),$2);
+    form2(parseInt($0),parseInt($1),Pointer_stringify($2));
   }, i,j,f);
   pruefeZeilen();
 }
 void text(int i, char* f) {
   // printf(">>T %d %s\n", i, f);
   EM_ASM_({
-    text(parseInt($0),$1);
+    text(parseInt($0),Pointer_stringify($1));
   }, i,f);
   pruefeZeilen();
 }
 void text2(int i, int j, char* f) {
   // printf(">>#T %d %d %s\n", i, j, f);
   EM_ASM_({
-    text2(parseInt($0),parseInt($1),$2);
+    text2(parseInt($0),parseInt($1),Pointer_stringify($2));
   }, i,j,f);
   pruefeZeilen();
 }
@@ -162,3 +162,4 @@ void symbolGroesse2(int i, int j, double s) {
 }
 
 int main() {
+

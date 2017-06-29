@@ -220,6 +220,18 @@ function changeNumMode(){
 }
 
 // Helper functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function checkShape(shape){
+	if (/^rect$|^circ$|^star$|^plus$/.test(shape)) return true;
+	return false
+}
+function checkColor(color){
+	if (/^(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$|\d+$)/.test(color)) return true;
+	return false;
+}
+function checkNumber(i) {
+	if (/^\d+$/.test(i)) return true;
+	return false;
+}
 // hex-colors need to be transformed from 0x000000/0x0000/0x00 to #000000
 function getCorrectColor(color) {
 	if (color === parseInt(color, 10)) {
@@ -266,69 +278,98 @@ function loeschen() {
 }
 
 function farbe(i,color) {
-	modifyField(getCoordForInt(i),1,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkNumber(i) && checkColor(color)) {
+		modifyField(getCoordForInt(i),1,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('farbe('+i+','+color+') is not a valid call of the function');
 }
 
 function farbe2(x,y,color) {
-	modifyField({x: x, y: y},1,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkNumber(x) && checkNumber(y) && checkColor(color)) {
+		modifyField({x: x, y: y},1,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('farbe2('+x+','+y+','+color+') is not a valid call of the function');
 }
 
 function farben(color) {
-	eachField(1,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkColor(color)) {
+		eachField(1,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('farben('+color+') is not a valid call of the function');
 }
 
 function flaeche(color){
-	canvas.backgroundColor = getCorrectColor(color);
-	canvas.renderAll();
+	if (checkColor(color)) {
+		canvas.backgroundColor = getCorrectColor(color);
+		canvas.renderAll();
+	} else statusText('flaeche('+color+') is not a valid call of the function');
 }
 
 function form(i,shape) {
-	modifyField(getCoordForInt(i),1,{'path': path[shape]});
-	canvas.renderAll();
+	var shape = getShape(shape) ? getShape(shape) : shape;
+	if (checkNumber(i) && checkShape(shape)) {
+		modifyField(getCoordForInt(i),1,{'path': path[shape]});
+		canvas.renderAll();
+	} else statusText('form('+i+','+shape+') is not a valid call of the function');
 }
 
 function form2(x,y,shape) {
-	modifyField({x: x, y: y},1,{'path': path[shape]});
-	canvas.renderAll();
+	var shape = getShape(shape) ? getShape(shape) : shape;
+	if (checkNumber(x) && checkNumber(y) && checkShape(shape)) {
+		modifyField({x: x, y: y},1,{'path': path[shape]});
+		canvas.renderAll();
+	} else statusText('form2('+x+','+y+','+shape+') is not a valid call of the function');
 }
 
 function formen(shape) {
-	eachField(1,{'path': path[shape]});
-	canvas.renderAll();
+	var shape = getShape(shape) ? getShape(shape) : shape;
+	if (checkShape(shape)) {
+		eachField(1,{'path': path[shape]});
+		canvas.renderAll();
+	} else statusText('formen('+shape+') is not a valid call of the function');
 }
 
 function rahmen(color) {
-	boardBorder.set('stroke',color);
-	canvas.renderAll();
+	if (checkColor(color)) {
+		boardBorder.set('stroke',color);
+		canvas.renderAll();
+	} else statusText('rahmen('+color+') is not a valid call of the function');
 }
+		
 
 function symbolGroesse(i,percent) {
-	modifyField(getCoordForInt(i),1,{
-		'scaleX':percent,
-		'scaleY':percent
-	});
-	canvas.renderAll();
+	if (checkNumber(i) && /^[\d+.\d,\d]+$/.test(percent)) {
+		modifyField(getCoordForInt(i),1,{
+			'scaleX':percent,
+			'scaleY':percent
+		});
+		canvas.renderAll();
+	} else statusText('symbolGroesse('+i+','+percent+') is not a valid call of the function');
 }
+		
 
 function symbolGroesse2(x,y,percent) {
-	modifyField({x: x, y: y},1,{
-		'scaleX':percent,
-		'scaleY':percent
-	});
-	canvas.renderAll();
+	if (checkNumber(x) && checkNumber(y) && /^[\d+.\d,\d]+$/.test(percent)) {
+		modifyField({x: x, y: y},1,{
+			'scaleX':percent,
+			'scaleY':percent
+		});
+		canvas.renderAll();
+	} else statusText('symbolGroesse2('+x+','+y+','+percent+') is not a valid call of the function');
 }
 
 function hintergrund(i,color) {
-	modifyField(getCoordForInt(i),0,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkNumber(i) && checkColor(color)) {
+		modifyField(getCoordForInt(i),0,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('hintergrund('+i+','+color+') is not a valid call of the function');
 }
 
 function hintergrund2(x,y,color) {
-	modifyField({x: x, y: y},0,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkNumber(x) && checkNumber(y) && checkColor(color)) {
+		modifyField({x: x, y: y},0,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('hintergrund2('+x+','+y+','+color+') is not a valid call of the function');
 }
 
 
@@ -338,38 +379,48 @@ function statusText(string) {
 
 
 function groesse(x,y) {
-	boardProps.noOfFields = {x: x, y: y};
-	boardProps.field = {
-		width: boardProps.pixel.width/(boardProps.noOfFields.x+boardProps.marginPercent.h*2+boardProps.paddingPercent.h*2),
-		height: boardProps.pixel.height/(boardProps.noOfFields.y+boardProps.marginPercent.v*2+boardProps.paddingPercent.v*2)
-	};
-	console.log("new board");
-	
-	loeschen();
-	drawBorder();
-	initPaths();
-	drawFields();
+	if (checkNumber(x) && checkNumber(y)) {
+		boardProps.noOfFields = {x: x, y: y};
+		boardProps.field = {
+			width: boardProps.pixel.width/(boardProps.noOfFields.x+boardProps.marginPercent.h*2+boardProps.paddingPercent.h*2),
+			height: boardProps.pixel.height/(boardProps.noOfFields.y+boardProps.marginPercent.v*2+boardProps.paddingPercent.v*2)
+		};
+		console.log("new board");
+		
+		loeschen();
+		drawBorder();
+		initPaths();
+		drawFields();
+	} else statusText('groesse('+x+','+y+') is not a valid call of the function');
 }
 
 
 function text(i,text) {
-	modifyField(getCoordForInt(i),3,{'text': text});
-	canvas.renderAll();
+	if (checkNumber(i)) {
+		modifyField(getCoordForInt(i),3,{'text': text});
+		canvas.renderAll();
+	} else statusText('text('+i+','+text+') is not a valid call of the function');
 }
 
 function text2(x,y,text) {
-	modifyField({x: x, y: y},3,{'text': text});
-	canvas.renderAll();
+	if (checkNumber(x) && checkNumber(y)) {
+		modifyField({x: x, y: y},3,{'text': text});
+		canvas.renderAll();
+	} else statusText('text2('+x+','+y+','+text+') is not a valid call of the function');
 }
 
 function textFarbe(i,color) {
-	modifyField(getCoordForInt(i),3,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkNumber(i) && checkColor(color)) {
+		modifyField(getCoordForInt(i),3,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('textFarbe('+i+','+color+') is not a valid call of the function');
 }
 
 function textFarbe2(x,y,color) {
-	modifyField({x: x, y: y},3,{'fill': getCorrectColor(color)});
-	canvas.renderAll();
+	if (checkNumber(x) && checkNumber(y) && checkColor(color)) {
+		modifyField({x: x, y: y},3,{'fill': getCorrectColor(color)});
+		canvas.renderAll();
+	} else statusText('textFarbe2('+x+','+y+','+color+') is not a valid call of the function');
 }
 
 
@@ -527,15 +578,15 @@ function getShape(s) {
 		case "c":
 			return "circ";
 			break;
-		case "d":
-			return "diamond";
-			break;
+		// case "d":
+		// 	return "diamond";
+		// 	break;
 		case "*":
 			return "star";
 			break;
-		case "r":
-			return "rand";
-			break;
+		// case "r":
+		// 	return "rand";
+		// 	break;
 		default:
 			console.log("Err: can't find symbol");
 			break;
@@ -566,6 +617,14 @@ function boslToJs(boslString) {
 		case /^r\s\d+\s\d+$/.test(boslString):
 			groesse(parseInt(cmd[1]),parseInt(cmd[2]));
 			break;
+		case /^\d+\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
+			if (!checkColorVar(cmd[1])) break;
+			farbe(parseInt(cmd[0]),/^[A-Z]+$/.test(cmd[1]) ? eval(cmd[1]) : cmd[1]);
+			break;
+		case /^#\s\d+\s\d+\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
+			if (!checkColorVar(cmd[3])) break;
+			farbe3(parseInt(cmd[1]),parseInt(cmd[2]),/^[A-Z]+$/.test(cmd[3]) ? eval(cmd[3]) : cmd[3]);
+			break;
 		case (new RegExp((/^f\s/).source + shapes.source + (/$/).source)).test(boslString):
 			formen(getShape(cmd[1]));
 			break;
@@ -581,19 +640,19 @@ function boslToJs(boslString) {
 		case /^#s\s\d+\s\d+\s[\d+.\d,\d]$/.test(boslString):
 			symbolGroesse2(parseInt(cmd[1]),parseInt(cmd[2]),cmd[3]);
 			break;
-		case /^ba\s(?:[A-Z]+|#\w{3}|#\w{6})$/.test(boslString):
+		case /^ba\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
 			if (!checkColorVar(cmd[1])) break;
 			flaeche(/^[A-Z]+$/.test(cmd[1]) ? eval(cmd[1]) : cmd[1]);
 			break;
-		case /^bo\s(?:[A-Z]+|#\w{3}|#\w{6})$/.test(boslString):
+		case /^bo\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
 			if (!checkColorVar(cmd[1])) break;
 			rahmen(/^[A-Z]+$/.test(cmd[1]) ? eval(cmd[1]) : cmd[1]);
 			break;
-		case /^b\s\d+\s(?:[A-Z]+|#\w{3}|#\w{6})$/.test(boslString):
+		case /^b\s\d+\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
 			if (!checkColorVar(cmd[2])) break;
 			hintergrund(parseInt(cmd[1]), /^[A-Z]+$/.test(cmd[2]) ? eval(cmd[2]) : cmd[2]);
 			break;
-		case /^#b\s\d+\s\d+\s(?:[A-Z]+|#\w{3}|#\w{6})$/.test(boslString):
+		case /^#b\s\d+\s\d+\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
 			if (!checkColorVar(cmd[3])) break;
 			hintergrund2(parseInt(cmd[1]),parseInt(cmd[2]), /^[A-Z]+$/.test(cmd[3]) ? eval(cmd[3]) : cmd[3]);
 			break;
@@ -605,11 +664,11 @@ function boslToJs(boslString) {
 			// to get the whole text, splice "T" "x" "y" and join the array
 			text2(parseInt(cmd[1]),parseInt(cmd[2]),(cmd.splice(3)).join(" "));
 			break;
-		case /^TC\s\d+\s(?:[A-Z]+|#\w{3}|#\w{6})$/.test(boslString):
+		case /^TC\s\d+\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
 			if (!checkColorVar(cmd[2])) break;
 			textFarbe(parseInt(cmd[1]), /^[A-Z]+$/.test(cmd[2]) ? eval(cmd[2]) : cmd[2]);
 			break;
-		case /^#TC\s\d+\s\d+\s(?:[A-Z]+|#\w{3}|#\w{6})$/.test(boslString):
+		case /^#TC\s\d+\s\d+\s(?:[A-Z]+$|#\w{3}$|#\w{6}$|0x\w{2}$|0x\w{4}$|0x\w{6}$)/.test(boslString):
 			if (!checkColorVar(cmd[3])) break;
 			textFarbe2(parseInt(cmd[1]),parseInt(cmd[2]), /^[A-Z]+$/.test(cmd[3]) ? eval(cmd[3]) : cmd[3]);
 			break;

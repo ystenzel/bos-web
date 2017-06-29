@@ -71,11 +71,11 @@ After that you can start the compose:
 docker-compose -f docker-compose-dev.yml up -d
 ```
 
-Notice that the services won't automatically, because the commands are overwritten in the compose file with ```command /bin/bash``` to get access to the bash when you attach them.
+Notice that the services won't automatically, because the commands are overwritten in the compose file with ```command /bin/bash``` to get access to the bash when you attach them. To leave them press ```ctrl + P``` and ```ctrl + Q```.
 
 To connect to a container run:
 ```
-docker name-of-container attach
+docker attach name-of-container
 ```
 
 Scripts inside the containers can be started, restarted and stopped with node or pm2.
