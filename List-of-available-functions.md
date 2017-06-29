@@ -6,54 +6,65 @@ The Board uses two different types of addressing the fields. A linear- and a x-/
 
 Erase the whole board:
 ```javascript
-function loeschen(){}```
+function loeschen(){}
+```
 
 And create a new one:
 ```javascript
-function groesse(x,y){}```
+function groesse(x,y){}
+```
 
 Color the background:
 ```javascript
-function flaeche(color){}```
+function flaeche(color){}
+```
 
 Color the frame of the board:
 ```javascript
-function rahmen(color){}```
+function rahmen(color){}
+```
 
 Give the fields different colors:
 ```javascript
 function farbe(i,color){}
 function farbe2(x,y,color){}
 // or even all fields at once
-function farben(color){}```
+function farben(color){}
+```
 
 Or a new shape (actually you can use s,c,*,rect,circ,star,plus):
 ```javascript
 function form(i,shape){}
 function form2(x,y,shape){}
 // all fields at once
-function formen(shape){}```
+function formen(shape){}
+```
 
 Change the size (0.5 is normal; 1 doubles the size):
 ```javascript
 function symbolGroesse(i,percent){}
-function symbolGroesse2(x,y,percent){}```
+function symbolGroesse2(x,y,percent){}
+```
 
 Set a background color for each field:
 ```javascript
 function hintergrund(i,color){}
-function hintergrund2(x,y,color){}```
+function hintergrund2(x,y,color){}
+```
 
 Show a text inside the fields:
 ```javascript
 function text(i,text){}
-function text2(x,y,text){}```
+function text2(x,y,text){}
+```
 
 And color the text:
 ```javascript
 function textFarbe(i,color){}
-function textFarbe2(x,y,color){}```
+function textFarbe2(x,y,color){}
+```
 
 Simply output a string above the Board:
 ```javascript
-function statusText(string){}```
+function statusText(string){}
+```
